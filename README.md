@@ -2,7 +2,7 @@
 
 🎉 **My first Spring Boot project** to build a RESTful API for managing The Weeknd's discography. The API includes features like storing album data, managing songs, and handling image uploads to S3.
 
-## Technologies Used
+## ✨Technologies Used
 
 - **Spring Boot** - Backend framework
 - **Amazon S3** - Image storage for album covers
