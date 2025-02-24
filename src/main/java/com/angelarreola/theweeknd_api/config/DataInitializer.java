@@ -1,29 +1,76 @@
 package com.angelarreola.theweeknd_api.config;
 
-import com.angelarreola.theweeknd_api.entities.Role;
-import com.angelarreola.theweeknd_api.entities.User;
-import com.angelarreola.theweeknd_api.repositories.RoleRepository;
-import com.angelarreola.theweeknd_api.repositories.UserRepository;
+import com.angelarreola.theweeknd_api.entities.*;
+import com.angelarreola.theweeknd_api.repositories.*;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Component
 public class DataInitializer {
-    private final RoleRepository roleRepository;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+//    private final RoleRepository roleRepository;
+//    private final UserRepository userRepository;
+//    private final PasswordEncoder passwordEncoder;
+//
+//    public DataInitializer(RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+//        this.roleRepository = roleRepository;
+//        this.userRepository = userRepository;
+//        this.passwordEncoder = passwordEncoder;
+//    }
 
-    public DataInitializer(RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.roleRepository = roleRepository;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private RoleRepository roleRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private SongRepository songRepository;
+    @Autowired
+    private AlbumRepository albumRepository;
+    @Autowired
+    private UserSongFavoriteRepository userSongFavoriteRepository;
+    @Autowired
+    private UserAlbumFavoriteRepository userAlbumFavoriteRepository;
 
     @PostConstruct
     public void initData() {
+
+        Album album1 = albumRepository.findByName("Dawn FM").orElseGet(() -> {
+            Album album = new Album();
+            album.setName("Dawn FM");
+            album.setReleaseDate(LocalDate.now());
+            album.setGenre("RB&B");
+            album.setnTracks(16);
+            return albumRepository.save(album);
+        });
+
+        Song song1 = songRepository.findByTitle("Take My Breath").orElseGet(() -> {
+            Song song = new Song();
+            song.setTitle("Take My Breath");
+            song.setAlbum(album1);
+            song.setGenre("RB&B");
+            song.setDuration(210);
+            song.setReleaseDate(LocalDate.now());
+            song.setTrackNumber(3);
+            return songRepository.save(song);
+        });
+
+        Song song2 = songRepository.findByTitle("Out of Time").orElseGet(() -> {
+            Song song = new Song();
+            song.setTitle("Out of Time");
+            song.setAlbum(album1);
+            song.setGenre("RB&B");
+            song.setDuration(186);
+            song.setReleaseDate(LocalDate.now());
+            song.setTrackNumber(9);
+            return songRepository.save(song);
+        });
 
         /* Create roles if they don't exist */
         Role adminRole = roleRepository.findByName("ADMIN").orElseGet(() -> {
@@ -68,6 +115,7 @@ public class DataInitializer {
             user1.setPassword(passwordEncoder.encode("user123"));
             user1.setRoles(Set.of(userRole));
             userRepository.save(user1);
+            addFavoriteSongsAndAlbums(user1, album1, song1, song2);
         }
 
         if (userRepository.findByUsername("user2").isEmpty()) {
@@ -79,6 +127,7 @@ public class DataInitializer {
             user2.setPassword(passwordEncoder.encode("user123"));
             user2.setRoles(Set.of(userRole));
             userRepository.save(user2);
+            addFavoriteSongsAndAlbums(user2, album1, song1, song2);
         }
 
         if (userRepository.findByUsername("assistant").isEmpty()) {
@@ -90,9 +139,26 @@ public class DataInitializer {
             assistant.setPassword(passwordEncoder.encode("assistant123"));
             assistant.setRoles(Set.of(assistantRole));
             userRepository.save(assistant);
+            addFavoriteSongsAndAlbums(assistant, album1, song1, song2);
         }
 
         System.out.println("✅ Initial data loaded successfully");
+    }
+
+    private void addFavoriteSongsAndAlbums(User user, Album album, Song... songs) {
+        UserAlbumFavorite albumFavorite = new UserAlbumFavorite();
+        albumFavorite.setUser(user);
+        albumFavorite.setAlbum(album);
+        albumFavorite.setAddedAt(LocalDateTime.now());
+        userAlbumFavoriteRepository.save(albumFavorite);
+
+        for (Song song : songs) {
+            UserSongFavorite songFavorite = new UserSongFavorite();
+            songFavorite.setUser(user);
+            songFavorite.setSong(song);
+            songFavorite.setAddedAt(LocalDateTime.now());
+            userSongFavoriteRepository.save(songFavorite);
+        }
     }
 
 }

@@ -44,6 +44,12 @@ public class User {
     )
     private Set<Role> roles;
 
+    @OneToMany(mappedBy = "user")
+    private Set<UserSongFavorite> likedSongs;
+
+    @OneToMany(mappedBy = "user")
+    private Set<UserAlbumFavorite> favoriteAlbums;
+
     public User() {}
 
     /**
@@ -136,6 +142,22 @@ public class User {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public Set<UserSongFavorite> getLikedSongs() {
+        return likedSongs;
+    }
+
+    public void setLikedSongs(Set<UserSongFavorite> likedSongs) {
+        this.likedSongs = likedSongs;
+    }
+
+    public Set<UserAlbumFavorite> getFavoriteAlbums() {
+        return favoriteAlbums;
+    }
+
+    public void setFavoriteAlbums(Set<UserAlbumFavorite> favoriteAlbums) {
+        this.favoriteAlbums = favoriteAlbums;
     }
 
     @Override
